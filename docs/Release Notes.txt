@@ -2,7 +2,8 @@ Release History
 
 Version       Date          Author            Notes / changes
 ===============================================================================================================================================================
-0.58          2017-0-02     David Gee         Update profile photo upload to fix bug.
+0.59          2017-08-14    David Gee         Block licensing of users marked as GAL contacts. Remove DHAM from OU block list.
+0.58          2017-08-02    David Gee         Update profile photo upload to fix bug.
 0.57          2017-07-31    David Gee         Completed replacement of O365 module with AAD for user update script.
 0.56          2017-07-26    David Gee         Introduced Azure AD module. Moved UPN change to AAD as part of user script. Disabled O365 UPN change.
 0.55          2017-07-17    David Gee         Added profile photo update code to support profile photo drop from Cherwell.
