@@ -1,0 +1,51 @@
+[CmdletBinding()]
+Param()
+
+Function Get-Data {
+
+  [CmdletBinding()]
+  Param(
+    [Hashtable[]]$DataSets
+  )
+
+  $users = $DataSets.AD
+
+  $data = New-Object System.Collections.ArrayList
+  $duplicateProxyAddresses = $users | Select -ExpandProperty proxyAddresses | Group-Object | Where { $_.Count -gt 1 } | Select -ExpandProperty Name
+  Foreach($dupPA in $duplicateProxyAddresses){
+    $paUsers = (Get-ADUser -LDAPFilter "(proxyAddresses=$dupPA)" | Select -ExpandProperty SamAccountName) -join ", "
+    $x = $data.Add([PSCustomObject]@{
+      Address = $dupPA
+      Usernames = $paUsers
+    })
+  }
+  @{
+    Filename = "duplicate-addresses.json"
+    Data = $data
+  }
+
+}
+
+Function Get-Attributes {
+
+  [CmdletBinding()]
+  Param()
+
+  [string[]]@("proxyAddresses")
+}
+
+Function Get-Datasets {
+
+  [CmdletBinding()]
+  Param()
+
+  [string[]]@("AD")
+}
+
+Function Get-Priority {
+
+  30
+
+}
+
+

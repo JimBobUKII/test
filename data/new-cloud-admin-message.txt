@@ -1,0 +1,12 @@
+A new Office 365 administration account has been created for you. Your new credentials and links to the Office 365 admin portals are below.
+
+Please note that when logging in for the first time, you will be asked to change your password and you will also be required to enroll in multi-factor authentication using your smartphone.
+
+Username: {username}
+Password: {password}
+
+Office 365 admin portal: https://portal.office.com/adminportal
+Exchange Online admin portal: https://outlook.office365.com/ecp
+Skype for Business Online admin portal: https://admin2a.online.lync.com/lscp
+SharePoint Online admin portal: https://smithsonline-admin.sharepoint.com
+Security & Compliance Centre: https://protection.office.com

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<!--#include file="includes/header.html" -->
+    <title>Smiths Office 365 Dashboard - BitTitan Migration Status</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  </head>
+  <body>
+<!--#include file="includes/nav-top.html" -->
+    <div class="container-fluid">
+      <div class="row">
+<!--#include file="includes/nav.html" -->
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">BitTitan Migration Status</h1>
+          <div class="row" id="bittitan-chart"></div>
+          <div class="row table-responsive">
+            <table class="table table-striped" id="data-table">
+              <thead>
+                <tr>
+                  <th>Primary E-mail Address</th>
+                  <th>Computer Name</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+          <div class="row">
+            <div class="last-updated" />
+          </div>
+          <script type="text/javascript">
+            $(function(){
+
+              google.charts.load('current', {'packages':['corechart']});
+              $.getJSON("data/bittitan-historical.json").done(function(data){
+                // Create the data table.
+                google.charts.setOnLoadCallback(function(){
+                  var dataWithDates = data.data.map(function(el, idx, ar){
+                    el[0] = new Date(el[0]);
+                    return el;
+                  });
+                  var d = google.visualization.arrayToDataTable(dataWithDates);
+                  var chart = new google.visualization.ChartWrapper({
+                    chartType: "AreaChart",
+                    dataTable: d,
+                    options: {
+                      title: "Migration Progress",
+                      isStacked: true,
+                      height: 400,
+                      legend: "bottom",
+                      /*pointSize: 10,*/
+                      hAxis: {
+                        gridlines: {
+                          count: -1,
+                          units: {
+                            days: {
+                              format: ["MMM dd"]
+                            },
+                            hours: {
+                              format: ["HH:mm", "ha"]
+                            }
+                          }
+                        },
+                        minorGridlines: {
+                          count: -1,
+                          units: {
+                            hours: {
+                              format: ["hh:mm:ss a", "ha"]
+                            },
+                            minutes: {
+                              format: ["HH:mm a Z", ":mm"]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    containerId: "bittitan-chart"
+                  });
+                  chart.draw();
+                });
+              });
+
+
+
+              $("#data-table").DataTable({
+                "ajax": {
+                  "url": "data/bittitan-status.json"
+                },
+                "columns": [
+                  { "data": "PrimaryEmailAddress" },
+                  { "data": "DeviceName" },
+                  { "data": "DPStatus" }
+                ]
+              });
+            });
+          </script>
+        </div>
+      </div>
+    </div>
+<!--#include file="includes/footer.html" -->
+  </body>
+</html>

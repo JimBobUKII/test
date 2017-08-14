@@ -1,0 +1,255 @@
+[CmdletBinding()]
+Param()
+
+$blockedDomains = Get-SmithsConfigSetting -Component "Resource Forest" -Name "Blocked Domains"
+$addressFields = Get-SmithsConfigSetting -Component "Resource Forest" -Name "Address Fields"
+$blockedSites = Get-SmithsConfigSetting -Component "Active Directory" -Name "Exclude Sites"
+$script:activity = "Mail Details"
+
+
+Function Merge-ADObjects {
+
+  [CmdletBinding()]
+  Param(
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    $ADObject,
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    $ResourceObject
+  )
+
+  $Changes = @{}
+
+  # Logic here is as follows:
+  #   If AD account EA4 is null or shared, check to see if Resource Forest
+  #   has more "accurate" data, i.e. account is room or equipment.
+  #   If so, use that.
+  #   If resource title field = "Resource Mailbox", treat as shared mailbox.
+  #   Update AD EA4 according to above, UNLESS EA4 is already set to something else
+
+  If($ADObject.extensionAttribute4 -in @($null, "Shared")){
+    $ea4 = $null
+    If($ResourceObject.msExchResourceDisplay -in @("Room", "Shared")){
+      $ea4 = $ResourceObject.msExchResourceDisplay
+    }
+    ElseIf($ResourceObject.Title -eq "Resource Mailbox"){
+      $ea4 = "Shared"
+    }
+    If($ea4 -ne $null){
+      $Changes.extensionAttribute4 = @{Type = "Set"; Value = $ea4}
+    }
+  }
+
+  $Changes += Merge-ADMailFields @PSBoundParameters
+  $Changes += Merge-ADAddressFields @PSBoundParameters
+  $Changes
+
+}
+
+Function Merge-ADAddressFields {
+
+  [CmdletBinding()]
+  Param(
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    $ADObject,
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    $ResourceObject
+  )
+
+  $changes = @{}
+
+  # Treat country as a special case because it is required for licensing
+  # Only populate if resource country is non-blank and AD country is blank
+  If((-not (Test-NullOrBlank -Value $ResourceObject.c)) -and (Test-NullOrBlank -Value $ADObject.c)){
+    $changes.c = @{Type = "Set"; Value = $ResourceObject.c}
+  }
+
+  # Then process all other fields, only update if AD street address and country are blank
+  If((Test-NullOrBlank -Value $ADObject.c) -and (Test-NullOrBlank -Value $ADObject.streetAddress)){
+    Foreach($field in $addressFields){
+      If((Test-NullOrBlank -Value $ResourceObject.$field)){
+        $fieldValue = $null
+      }
+      Else{
+        $fieldValue = $ResourceObject.$field.Trim()
+      }
+      $changes.$field = @{Type = "Set"; Value = $fieldValue}
+    }
+  }
+  $changes
+}
+
+Function Merge-ADMailFields {
+
+  [CmdletBinding()]
+  Param(
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    $ADObject,
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    $ResourceObject
+  )
+
+
+  [string[]]$newProxyAddresses = @()
+  [string]$newMail = $null
+  [Hashtable]$changes = @{}
+
+
+  # If UPN not already added to proxy addresses, add it as a secondary
+
+
+  # Determine the primary e-mail address - use resource domain if available and not invalid
+  # Otherwise, use UPN from primary AD
+
+  $blockedDomainsRegex = "@(" + ($blockedDomains -join "|") + ")$"
+
+  If($ResourceObject.mail -notmatch $blockedDomainsRegex){
+    $newMail = $ResourceObject.mail
+    Write-SmithsLog -Level Debug -Identity $ADObject.SamAccountName -Message "Adding proxyAddress SMTP:$newMail from resource domain (mail)" -Activity $script:activity
+    If($ADObject.UserPrincipalName -ne $null -and $ADObject.UserPrincipalName -ne ""){
+
+      # If the UPN is not the primary e-mail address, add the UPN as a secondary
+      # This mimics the behaviour of Office 365
+
+      If($ADObject.UserPrincipalName -ne $newMail){
+        $newProxyAddresses += "smtp:$($ADObject.UserPrincipalName)"
+        Write-SmithsLog -Level Debug -Identity $ADObject.SamAccountName -Message "Adding proxyAddress smtp:$($ADObject.UserPrincipalName) from AD (UPN)" -Activity $script:activity
+      }
+      Else {
+        Write-SmithsLog -Level Debug -Identity $ADObject.SamAccountName -Message "Skipping proxyAddress from AD (UPN) because it is blank" -Activity $script:activity
+      }
+    }
+  }
+  Else {
+    If((Test-NullOrBlank -Value $ADObject.UserPrincipalName)){
+      Write-SmithsLog -Level Debug -Identity $ADObject.SamAccountName -Message "Skipping proxyAddress from AD (UPN) because it is blank" -Activity $script:activity
+    }
+    Else {
+      $newMail = $ADObject.UserPrincipalName
+      Write-SmithsLog -Level Debug -Identity $ADObject.SamAccountName -Message "Adding proxyAddress SMTP:$newMail from AD (UPN)" -Activity $script:activity
+    }
+
+  }
+
+  # Set primary SMTP if e-mail address not blank
+
+  If(-not (Test-NullOrBlank -Value $newMail)){
+    $newProxyAddresses += "SMTP:$newMail"
+    $changes.mail = @{Type = "Set"; Value = $newMail}
+  }
+
+  # Keep everything from AD except the following list
+
+  $adProxyAddresses = $ADObject.proxyAddresses | Where { $_ -cnotmatch "^(SMTP|smtp|X500|X400|sip|SIP):" }
+  If($adProxyAddresses.Count -gt 0){
+    $newProxyAddresses += [string[]]$adProxyAddresses
+    Write-SmithsLog -Level Debug -Identity $ADObject.SamAccountName -Message "Adding proxyAddresses $($adProxyAddresses -join ";") from AD (non-SMTP/Xn00/SIP)" -Activity $script:activity
+  }
+
+  $resourceProxyAddresses = $ResourceObject.proxyAddresses | Where { $_ -cmatch "^smtp:" -and $_ -notmatch "^smtp:msrtcsip-" -and $_ -notmatch $blockedDomainsRegex -and ($_ -cnotmatch "^smtp:" -or ($_ -cmatch "^smtp:" -and $_ -notmatch "@attsmiths.com$")) -and $_ -notin $newProxyAddresses}
+  If($resourceProxyAddresses.Count -gt 0){
+    $newProxyAddresses += [string[]]$resourceProxyAddresses
+    Write-SmithsLog -Level Debug -Identity $ADObject.SamAccountName -Message "Adding proxyAddresses $($resourceProxyAddresses -join ";") from resource domain (secondary)" -Activity $script:activity
+  }
+
+  # Check to see whether the SIP address is present in the proxyAddresses; add it if not
+
+  If(-not (Test-NullOrBlank -Value $ADObject."msRTCSIP-PrimaryUserAddress")){
+
+    # Correct to uppercase and add
+
+    $sfbProxyAddress = "SIP:$($ADObject."msRTCSIP-PrimaryUserAddress".Substring(4))"
+    $newProxyAddresses += [string]$sfbProxyAddress
+    Write-SmithsLog -Level Debug -Identity $ADObject.SamAccountName -Message "Adding proxyAddress $sfbProxyAddress from AD (SIP)" -Activity $script:activity
+
+  }
+
+  [string[]]$sortedProxyAddresses = $newProxyAddresses | Sort-Object -CaseSensitive
+  Write-SmithsLog -Level Debug -Identity $ADObject.SamAccountName -Message "Final set of proxyAddresses: $($sortedProxyAddresses -join ";")" -Activity $script:activity
+
+
+  If($ResourceObject.title -eq "Resource Mailbox"){
+    $changes.title = @{Type = "Set"; Value = "Resource Mailbox"}
+  }
+
+  $changes.proxyAddresses = @{Type = "Replace"; Value = $sortedProxyAddresses}
+
+  $changes
+}
+
+Function Get-Changes {
+
+  [CmdletBinding()]
+  Param(
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [Object]$ResourceUser,
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [Microsoft.ActiveDirectory.Management.ADUser]$ADUser
+  )
+
+  $dnc = Get-DNComponents -DistinguishedName $ADUser.DistinguishedName
+
+  # Substring from char 3 chops of the leading "OU=" characters (length 3)
+  $site = $dnc[-6].Substring(3)
+
+  If($ADUser.mail -ne $null -and $ADUser.mail -ne ""){
+
+    If($site -in $blockedSites){
+
+      Write-SmithsLog -Level DEBUG -Identity $ADUser.SamAccountName -Message "User is in blocked site code, skipping" -Activity $script:activity
+    }
+    Else {
+      $changes = Merge-ADObjects -ADObject $ADUser -ResourceObject $ResourceUser
+      Write-SmithsLog -Level DEBUG -Identity $ADUser.SamAccountName -Message "merging changes from resource domain." -Activity $script:activity
+      $changes
+    }
+  }
+  Else {
+    Write-SmithsLog -Level DEBUG -Identity $ADUser.SamAccountName -Message "no e-mail address, skipping." -Activity $script:activity
+    @{mail = @{Type = "Clear"}; proxyAddresses = @{Type = "Clear"}}
+  }
+
+}
+
+
+Function Get-ADAttributes {
+
+  [CmdletBinding()]
+  Param()
+
+  $fields = [string[]]@("mail", "proxyAddresses", "title", "msRTCSIP-PrimaryUserAddress", "userPrincipalName", "extensionAttribute4", "msExchResourceDisplay", "c")
+  $fields += $addressFields
+  $fields
+
+}
+
+Function Get-ResourceAttributes {
+
+  [CmdletBinding()]
+  Param()
+
+  $fields = [string[]]@("mail", "proxyAddresses", "title", "extensionAttribute13", "samaccountname", "c")
+  $fields += $addressFields
+  $fields
+
+
+}
+
+Function Get-Priority {
+
+  [CmdletBinding()]
+  Param()
+
+  30
+
+}
+
+
+$script:attributes = Get-ResourceAttributes

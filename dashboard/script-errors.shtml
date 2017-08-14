@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<!--#include file="includes/header.html" -->
+    <title>Smiths Office 365 Dashboard - Script Errors</title>
+  </head>
+  <body>
+<!--#include file="includes/nav-top.html" -->
+    <div class="container-fluid">
+      <div class="row">
+<!--#include file="includes/nav.html" -->
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">Errors</h1>
+          <div class="table-responsive">
+            <table class="table table-striped" id="data-table">
+              <thead>
+                <tr>
+                  <th>Last Occurrence</th>
+                  <th>Occurrences</th>
+                  <th>Severity</th>
+                  <th>Component</th>
+                  <th>Activity</th>
+                  <th>Message</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+          <script type="text/javascript">
+            $(function(){
+              var t = $("#data-table").DataTable({
+                "ajax": {
+                  "url": "data/errors.json"
+                },
+                "columns": [
+                  { "data": "LastOccurrence" },
+                  { "data": "Occurrences" },
+                  { "data": "Severity" },
+                  { "data": "Component" },
+                  { "data": "Activity" },
+                  { "data": "Message" }
+                ]
+              });
+              t.order([0, "desc"]).draw();
+            });
+          </script>
+        </div>
+      </div>
+    </div>
+<!--#include file="includes/footer.html" -->
+  </body>
+</html>

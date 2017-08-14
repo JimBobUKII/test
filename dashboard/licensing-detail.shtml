@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<!--#include file="includes/header.html" -->
+    <title>Smiths Office 365 Dashboard - User Migration Status</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  </head>
+  <body>
+<!--#include file="includes/nav-top.html" -->
+    <div class="container-fluid">
+      <div class="row">
+<!--#include file="includes/nav.html" -->
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">Licensing by Division</h1>
+          <div id="chart-container">
+            <div class="row">
+              <div class="col-sm-12 col-md-12">
+                <div id="licensing-chart"></div>
+              </div>
+            </div>
+          </div> <!-- chart-container -->
+          <div id="table-container">
+            <div class="row">
+              <div class="col-sm-12 col-md-12">
+                <div><table class="has-total-row table table-striped" id="licensing-table"></table></div>
+              </div>
+            </div> <!-- row -->
+          </div> <!-- table-container -->
+          <div class="row">
+            <div class="last-updated" />
+          </div>
+        </div> <!-- main -->
+        <script type="text/javascript">
+          google.charts.load('current', {'packages':['corechart']});
+          $(function(){
+            $.getJSON("data/licensing-detail.json").done(function(data){
+              stackedBar(data.data, "Licensing by Division", "licensing-chart", "percent");
+              // Use slice here to create a copy of the data for the table as it will need to add total row and col
+              createTable($("#licensing-table"), data.data, { percentageColumn: false, totalRow: false});
+            });
+          });
+        </script>
+      </div> <!-- row -->
+    </div> <!-- container-fluid -->
+<!--#include file="includes/footer.html" -->
+    <script src="script/table-functions.js"></script>
+    <script src="script/bar-chart.js"></script>
+  </body>
+</html>

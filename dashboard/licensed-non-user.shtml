@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<!--#include file="includes/header.html" -->
+    <title>Smiths Office 365 Dashboard - Licensed Non-User Accounts</title>
+  </head>
+  <body>
+<!--#include file="includes/nav-top.html" -->
+    <div class="container-fluid">
+      <div class="row">
+<!--#include file="includes/nav.html" -->
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">Licensed Non-User (Room/Equipment/Shared) Accounts</h1>
+          <div class="table-responsive">
+            <table class="table table-striped" id="data-table">
+              <thead>
+                <tr>
+                  <th>Display Name</th>
+                  <th>Username</th>
+                  <th>E-mail Address</th>
+                  <th>Type</th>
+                  <th>License(s)</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+          <script type="text/javascript">
+            $(function(){
+                console.log("firing");
+              $("#data-table").DataTable({
+                "ajax": {
+                  "url": "data/licensed-resources.json"
+                },
+                "columns": [
+                  { "data": "Name" },
+                  { "data": "Username" },
+                  { "data": "PrimarySmtp" },
+                  { "data": "MailboxType" },
+                  { "data": "Licenses" }
+                ]
+              });
+            });
+          </script>
+        </div>
+      </div>
+    </div>
+<!--#include file="/includes/footer.html" -->
+  </body>
+</html>
+
+
+

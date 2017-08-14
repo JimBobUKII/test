@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<!--#include file="includes/header.html" -->
+    <title>Smiths Office 365 Dashboard - Azure AD Sync Errors</title>
+  </head>
+  <body>
+<!--#include file="includes/nav-top.html" -->
+    <div class="container-fluid">
+      <div class="row">
+<!--#include file="includes/nav.html" -->
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">Azure AD Sync Errors</h1>
+          <div class="table-responsive">
+            <table class="table table-striped" id="data-table">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>UserPrincipalName</th>
+                  <th>Problem(s)</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
+          <script type="text/javascript">
+            $(function(){
+              $("#data-table").DataTable({
+                "ajax": {
+                  "url": "data/azure-ad-sync-errors.json"
+                },
+                "columns": [
+                  { "data": "SamAccountName" },
+                  { "data": "UserPrincipalName" },
+                  { "data": "Reason" }
+                ]
+              });
+            });
+          </script>
+        </div>
+      </div>
+    </div>
+<!--#include file="includes/footer.html" -->
+  </body>
+</html>
+
+

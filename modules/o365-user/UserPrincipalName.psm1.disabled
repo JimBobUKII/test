@@ -1,0 +1,50 @@
+[CmdletBinding()]
+Param()
+
+$script:activity = "UserPrincipalName"
+
+Function Update-CloudUsers {
+
+  [CmdletBinding()]
+  Param(
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [Microsoft.ActiveDirectory.Management.ADUser[]]$Users,
+    [Object[]]$CloudUsers,
+    [switch]$ReadOnly
+  )
+
+  Write-SmithsLog -Level DEBUG -Activity $script:activity -Message "Collecting cloud UPNs"
+
+  Write-SmithsLog -Level DEBUG -Activity $script:activity -Message "Finding UPNs with mismatches"
+  $cloudUPNs = $CloudUsers | Select -ExpandProperty UserPrincipalName
+  $mismatchedUsersinMsol = [Microsoft.ActiveDirectory.Management.ADUser[]]($Users | Where { $_.UserPrincipalName -notin $cloudUPNs })
+  If($mismatchedUsersInMsol.Count -gt 0){
+    Write-SmithsLog -Level INFO -Activity $script:activity -Message "$($mismatchedUsersInMsol.Count) mismatched UPNs found"
+    $fixedUsers = $mismatchedUsersInMsol | Get-SmithsO365UserAndFixUPN
+  }
+  Else {
+    Write-SmithsLog -Level INFO -Activity $script:activity -Message "No mismatched UPNs found"
+  }
+}
+
+Function Get-Attributes {
+
+  [CmdletBinding()]
+  Param()
+
+  @("mail")
+
+}
+
+
+
+Function Get-Priority {
+
+  [CmdletBinding()]
+  Param()
+
+  10
+
+}
+

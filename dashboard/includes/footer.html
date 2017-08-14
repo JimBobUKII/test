@@ -1,0 +1,35 @@
+    <!-- Latest JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <!-- Latest DataTables with Bootstrap integration -->
+    <script src="https://cdn.datatables.net/v/bs/dt-1.10.12/datatables.min.js"></script>
+    <!-- Latest ES6-shim for IE11 and other non-compatible browsers -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es6-promise/4.0.5/es6-promise.auto.min.js"></script>
+
+    <script type="text/javascript">
+
+      // highlight active nav entry
+      var leaf = window.location.href.split("/").pop();
+      if(leaf == "") leaf = "./";
+      var navNode = $(".nav-sidebar li:not(.disabled):has(a[href='" + leaf + "'])");
+      //if(navNode.length == 0) navNode = $(".nav-sidebar li:not(.disabled)");
+      navNode.addClass("active");
+
+
+      // add last updated date
+      $(function(){
+        $.ajax({
+          url: "/data/last-updated.json"
+        }).then(function(data){
+          $(".last-updated").text("Last updated: " + new Date(data.LastUpdated).toLocaleString());
+        }).catch(function(e){
+          console.error("halp!");
+          console.error(e);
+        });
+      });
+
+      // process deferred document.ready functions
+      $.each(q,function(index,f){$(f)});
+
+    </script>

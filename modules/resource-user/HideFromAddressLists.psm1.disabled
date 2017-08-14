@@ -1,0 +1,59 @@
+[CmdletBinding()]
+Param()
+
+$script:activity = "Hide From Address Lists"
+
+Function Get-Changes {
+
+  [CmdletBinding()]
+  Param(
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [Object]$ResourceUser,
+    [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
+    [Microsoft.ActiveDirectory.Management.ADUser]$ADUser
+  )
+
+
+  If($ResourceUser.msExchHideFromAddressLists -eq $null){
+    @{msExchHideFromAddressLists = @{Type = "Clear"}}
+  }
+  Else {
+    @{msExchHideFromAddressLists = @{Type = "Set"; Value = $ResourceUser.msExchHideFromAddressLists}}
+  }
+
+}
+
+Function Get-ADAttributes {
+
+  [CmdletBinding()]
+  Param()
+
+  [string[]]@(
+    "msExchHideFromAddressLists"
+  )
+
+}
+
+Function Get-ResourceAttributes {
+
+  [CmdletBinding()]
+  Param()
+
+  [string[]]@(
+    "msExchHideFromAddressLists"
+  )
+}
+
+Function Get-Priority {
+
+  [CmdletBinding()]
+  Param()
+
+  20
+
+}
+
+
+

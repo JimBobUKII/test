@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+  <static>
+    <scope name="Global">
+      <setting name="tenant" type="string">smithsgroup</setting>
+      <setting name="loglevel" type="string"></setting>
+      <setting name="consolelevel" type="string">INFO</setting>
+      <setting name="Email Regex" type="string">^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$</setting>
+      <setting name="E-mail From" type="string"><![CDATA[BIS Office 365 Global Admin <office365@smiths.com>]]></setting>
+      <setting name="SMTP Server" type="string">smtp.smiths.com</setting>
+      <setting name="Notifications DL" type="string">jchqo365notifications@smithsonline.onmicrosoft.com</setting>
+    </scope>
+    <scope name="File Logging">
+      <setting name="Migration Group Update" type="string">DEBUG</setting>
+      <setting name="AD Group Update" type="string">DEBUG</setting>
+      <setting name="AD User Update" type="string">DEBUG</setting>
+      <setting name="Exchange Online User Update" type="string">DEBUG</setting>
+      <setting name="O365 User Update" type="string">DEBUG</setting>
+      <setting name="Migration Group Update Simulation" type="string">DEBUG</setting>
+      <setting name="AD Group Update Simulation" type="string">DEBUG</setting>
+      <setting name="AD User Update Simulation" type="string">DEBUG</setting>
+      <setting name="Exchange Online User Update Simulation" type="string">DEBUG</setting>
+      <setting name="O365 User Update Simulation" type="string">DEBUG</setting>
+    </scope>
+    <scope name="Console Logging">
+      <setting name="Migration Group Update" type="string">INFO</setting>
+      <setting name="AD Group Update" type="string">INFO</setting>
+      <setting name="AD User Update" type="string">INFO</setting>
+      <setting name="Exchange Online User Update" type="string">INFO</setting>
+      <setting name="O365 User Update" type="string">INFO</setting>
+      <setting name="Migration Group Update Simulation" type="string">DEBUG</setting>
+      <setting name="AD Group Update Simulation" type="string">DEBUG</setting>
+      <setting name="AD User Update Simulation" type="string">DEBUG</setting>
+      <setting name="Exchange Online User Update Simulation" type="string">DEBUG</setting>
+      <setting name="O365 User Update Simulation" type="string">DEBUG</setting>
+    </scope>
+    <scope name="Office 365">
+      <setting name="Credential" type="credential">office365-credential.txt</setting>
+      <setting name="User Modules" type="string">o365-user</setting>
+      <setting name="New Cloud Admin Message" type="file">data/new-cloud-admin-message.txt</setting>
+      <setting name="Licensing Override" type="boolean">false</setting>
+    </scope>
+    <scope name="Mailbox Features">
+      <setting name="remove-features-on" type="string">Sunday</setting>
+    </scope>
+    <scope name="Active Directory">
+      <setting name="Credential" type="credential">smithsnet-credentials.txt</setting>
+      <setting name="Search Base" type="string">OU=Regions,DC=Smiths,DC=Net</setting>
+      <setting name="Test Users" type="string[]">jchqdgee2-la,jmorfbaggins,mdbnsgamgee</setting>
+      <setting name="Exclude Sites" type="string[]">SII,SMIL,SMIL2,STEC,STRT,DACI,DDNN,DESS,DEWN,DIJM,DMOR,DNPT,DNWK,DAND,DSNA,DCAM,DSCL</setting>
+      <setting name="O365 Groups OU" type="string">OU=Office 365,OU=Global Groups,OU=Global,OU=Regions,DC=smiths,DC=net</setting>
+      <setting name="User Modules" type="string">ad-user</setting>
+      <setting name="Group Modules" type="string">ad-group</setting>
+      <setting name="Inactive OUs" type="string[]">OU=Inactive Users,OU=Inactive Restricted Users</setting>
+      <setting name="User Do Not Sync" type="string">User_DoNotSyncO365</setting>
+      <setting name="Group Do Not Sync" type="string">Group_DoNotSyncO365</setting>
+      <setting name="Site Code Regex" type="string">[BCDJMS][A-Za-z0-9]{3}</setting>
+      <setting name="Update Delta" type="long">5</setting>
+      <setting name="Morpho Legal Hold Group" type="string">BIS O365 Morpho Legal Hold</setting>
+      <setting name="Divisions" type="string[]">Corporate,Medical,John Crane,Interconnect,BIS,HRSC,Detection,Flex-Tek</setting>
+    </scope>
+    <scope name="Exchange Online">
+      <setting name="User Modules" type="string">exchangeonline-user</setting>
+      <setting name="Subset Modules" type="string">exchangeonline-user-subset</setting>
+      <setting name="Owner Auditing" type="string[]">Create,HardDelete,MailboxLogin,Move,MoveToDeletedItems,SoftDelete,Update</setting>
+      <setting name="Delegate Auditing" type="string[]">Create,FolderBind,HardDelete,Move,MoveToDeletedItems,SendAs,SendOnBehalf,SoftDelete,Update</setting>
+      <setting name="Admin Auditing" type="string[]">Copy,Create,FolderBind,HardDelete,MessageBind,Move,MoveToDeletedItems,SendAs,SendOnBehalf,SoftDelete,Update</setting>
+      <setting name="Default Retention Policy" type="string">Default MRM Policy</setting>
+      <setting name="Photo Directory" type="string">C:/Profile Pictures/</setting>
+      <setting name="Export File Share" type="string">\\cnlcsif20\SQLExport</setting>
+    </scope>
+    <scope name="Cloud Admins">
+      <setting name="Admin Modules" type="string">cloud-admins</setting>
+    </scope>
+    <scope name="Reports">
+      <setting name="Modules" type="string">reports</setting>
+      <setting name="HTML Regex" type="string"><![CDATA[(?mis)<table>.*</table>]]></setting>
+      <setting name="Report Header" type="string">data/report-header.html</setting>
+      <setting name="Report Footer" type="string">data/report-footer.html</setting>
+      <setting name="Attributes" type="string[]">memberOf,proxyAddresses,adminDescription</setting>
+      <setting name="Data Directory" type="string">dashboard/data</setting>
+    </scope>
+  </static>
+  <groups>
+    <scope name="Legacy ActiveSync">
+      <setting name="Standard">
+        <group type="include" name="MDM - Standard User" />
+      </setting>
+      <setting name="Exec">
+        <group type="include" name="MDM - Executive User" />
+      </setting>
+      <setting name="BYOD">
+        <group type="include" name="BYOD - Standard Users" />
+      </setting>
+    </scope>
+    <scope name="Licensing">
+      <setting name="EXCHANGESTANDARD" description="Exchange Online Plan 1" type="O365Core">
+        <group type="include" name="BIS O365 Exchange Online Plan 1 Users" />
+      </setting>
+      <setting name="EXCHANGEENTERPRISE" description="Exchange Online Plan 2" type="O365Core">
+        <group type="include" name="BIS O365 Exchange Online Plan 2 Users" />
+      </setting>
+      <setting name="STANDARDPACK" description="E1" type="O365Core">
+        <group type="include" name="BIS O365 E1 Users" />
+      </setting>
+      <setting name="ENTERPRISEPACK" description="E3" type="O365Core">
+        <group type="include" name="BIS O365 E3 Users" />
+      </setting>
+      <setting name="POWER_BI_STANDARD" description="Power BI Free" type="PowerBI">
+        <group type="include" name="BIS O365 Power BI Free Users" />
+      </setting>
+      <setting name="POWER_BI_PRO" description="Power BI Pro" type="PowerBI">
+        <group type="include" name="BIS O365 Power BI Pro Users" />
+      </setting>
+      <setting name="STREAM" description="Microsoft Stream" type="Stream">
+        <group type="include" name="BIS O365 Stream Users" />
+      </setting>
+      <setting name="POWERAPPS_VIRAL" description="Microsoft Power Apps and Flow" type="PowerAppsAndFlow">
+        <group type="include" name="BIS O365 Power Apps and Flow Users" />
+      </setting>
+    </scope>
+    <scope name="User Features">
+      <setting name="EmailUser" description="Groups which provide an e-mail license">
+        <group type="include" name="BIS O365 Exchange Online Plan 1 Users" />
+        <group type="include" name="BIS O365 Exchange Online Plan 2 Users" />
+        <group type="include" name="BIS O365 E1 Users" />
+        <group type="include" name="BIS O365 E3 Users" />
+      </setting>
+    </scope>
+    <scope name="Mailbox Features">
+      <setting name="PopEnabled">
+        <group type="include" name="BIS O365 Exchange Online Allow POP" />
+      </setting>
+      <setting name="ImapEnabled">
+        <group type="include" name="BIS O365 Exchange Online Allow IMAP" />
+      </setting>
+      <setting name="OWAEnabled">
+        <group type="include" name="BIS O365 Exchange Online Allow OWA" />
+      </setting>
+      <setting name="OWAForDevicesEnabled">
+        <group type="include" name="BIS O365 Exchange Online Allow OWA" />
+      </setting>
+      <setting name="ActiveSyncEnabled">
+        <group type="include" name="BIS O365 Exchange Online Allow ActiveSync" />
+        <group type="include" name="BIS O365 Exchange Online Allow ActiveSync with SMIME" />
+      </setting>
+    </scope>
+    <scope name="Retention Policies">
+      <setting name="Manual Retention">
+        <group type="include" name="BIS O365 Exchange Online Manual Retention" />
+      </setting>
+      <setting name="25 Year Exception MRM Policy">
+        <group type="include" name="BIS O365 Exchange Online 25-Year Retention" />
+      </setting>
+      <setting name="10 Year Exception MRM Policy">
+        <group type="include" name="BIS O365 Exchange Online 10-Year Retention" />
+        <group type="include" name="BIS O365 Morpho Legal Hold" />
+      </setting>
+    </scope>
+    <scope name="Migration">
+      <setting name="EXCHANGESTANDARD">
+        <group type="include" name="BIS O365 Migrating Users" />
+      </setting>
+      <setting name="EXCHANGEENTERPRISE">
+        <group type="include" name="BIS O365 Migrating Users" />
+      </setting>
+      <setting name="STANDARDPACK">
+        <group type="include" name="BIS O365 Migrating Users" />
+      </setting>
+      <setting name="ENTERPRISEPACK">
+        <group type="include" name="BIS O365 Migrating Users" />
+      </setting>
+    </scope>
+    <scope name="Exchange Online Admin Roles">
+      <setting name="BIS Global Service Desk Admins">
+        <group type="include" name="BIS O365 Exchange Online GSD Admins" />
+      </setting>
+      <setting name="BIS Client Services Admins">
+        <group type="include" name="BIS O365 Exchange Online CS Admins" />
+      </setting>
+      <setting name="BIS Information Security Read-Only">
+        <group type="include" name="BIS O365 Security and Compliance Readers" />
+      </setting>
+    </scope>
+    <scope name="Office 365 Admin Roles">
+      <setting name="User Account Administrator">
+        <group type="include" name="BIS O365 Exchange Online GSD Admins" />
+        <group type="include" name="BIS O365 Exchange Online CS Admins" />
+      </setting>
+      <setting name="Exchange Service Administrator">
+        <group type="include" name="BIS O365 Exchange Online Service Admins" />
+      </setting>
+      <setting name="SharePoint Service Administrator">
+        <group type="include" name="BIS O365 SharePoint Online Service Admins" />
+      </setting>
+      <setting name="Intune Service Administrator">
+        <group type="include" name="BIS O365 Intune Service Admins" />
+      </setting>
+      <setting name="Lync Service Administrator">
+        <group type="include" name="BIS O365 Skype for Business Online Service Admins" />
+      </setting>
+      <setting name="Power BI Service Administrator">
+        <group type="include" name="BIS O365 Power BI Service Admins" />
+      </setting>
+    </scope>
+    <scope name="Security and Compliance Admin Roles">
+      <setting name="BIS Security Read-Only">
+        <group type="include" name="BIS O365 Security and Compliance Readers" />
+      </setting>
+    </scope>
+    <scope name="Cloud Admin Provisioning">
+      <setting name="All Cloud Admin Groups">
+        <group type="include" name="BIS O365 Exchange Online GSD Admins" />
+        <group type="include" name="BIS O365 Exchange Online CS Admins" />
+        <group type="include" name="BIS O365 Security and Compliance Readers" />
+        <group type="include" name="BIS O365 Exchange Online Service Admins" />
+        <group type="include" name="BIS O365 SharePoint Online Service Admins" />
+        <group type="include" name="BIS O365 Intune Service Admins" />
+        <group type="include" name="BIS O365 Skype for Business Online Service Admins" />
+        <group type="include" name="BIS O365 Power BI Service Admins" />
+      </setting>
+    </scope>
+  </groups>
+</config>

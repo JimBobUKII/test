@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<!--#include file="includes/header.html" -->
+    <title>Smiths Office 365 Dashboard - Non-User Migration Status</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  </head>
+  <body>
+<!--#include file="includes/nav-top.html" -->
+    <div class="modal fade" tabindex="-1" role="dialog" id="table-modal">
+      <div class="modal-dialog" role="document" style="width: 90%;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">User List</h4>
+          </div>
+          <div class="modal-body">
+            <div class="table-responsive">
+              <table class="table table-striped" id="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Username</th>
+                    <th>UserPrincipalName</th>
+                    <th>E-mail Address</th>
+                  </tr>
+                </thead>
+              </table>
+            </div> <!-- table-responsive -->
+          </div> <!-- modal-body -->
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div> <!-- modal-footer -->
+        </div> <!-- modal-content -->
+      </div> <!-- modal-dialog -->
+    </div> <!-- modal -->
+    <div class="container-fluid">
+      <div class="row">
+<!--#include file="includes/nav.html" -->
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">Non-User Migration Status</h1>
+            <div id="chart-container">
+              <div class="row">
+                <div class="col-sm-4 col-md-4">
+                  <div id="bis-pie"></div>
+                </div>
+                <div class="col-sm-4 col-md-4">
+                  <div id="corp-pie"></div>
+                </div>
+                <div class="col-sm-4 col-md-4">
+                  <div id="med-pie"></div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4 col-md-4">
+                  <div id="jc-pie"></div>
+                </div>
+                <div class="col-sm-4 col-md-4">
+                  <div id="det-pie"></div>
+                </div>
+                <div class="col-sm-4 col-md-4">
+                  <div id="int-pie"></div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4 col-md-4">
+                  <div id="flex-pie"></div>
+                </div>
+                <div class="col-sm-4 col-md-4">
+                  <div id="hrsc-pie"></div>
+                </div>
+                <div class="col-sm-4 col-md-4">
+                  <div id="unknown-pie"></div>
+                </div>
+              </div> <!-- row -->
+            </div> <!-- chart-container -->
+            <div class="row">
+              <div class="last-updated" />
+            </div>
+          </div> <!-- container-fluid -->
+          <script type="text/javascript">
+
+            function showData(division, status){
+              var container = $("#data-table-container");
+              //$("#data-table").remove();
+              var dt = $("#data-table").DataTable();
+              dt.ajax.url("data/nonuser-status-" + division + "-" + status + ".json").load();
+              //$("#chart-container").hide();
+              //$("#table-container").show();
+              $("#table-modal").modal();
+            }
+
+            // Load the Visualization API and the corechart package.
+            //var userStatusData = null;
+            google.charts.load('current', {'packages':['corechart']});
+            $(function(){
+              $("#data-table").DataTable({
+                "columns": [
+                  { "data": "User" },
+                  { "data": "Username" },
+                  { "data": "UserPrincipalName" },
+                  { "data": "mail" }
+                ]
+              });
+              $.getJSON("data/nonuser-overview.json").done(function(data){
+                // Create the data table.
+                google.charts.setOnLoadCallback(function(){
+                  divisionalPie(data.data.Divisions.BIS, "BIS", "bis-pie");
+                  divisionalPie(data.data.Divisions.Corporate, "Corporate", "corp-pie");
+                  divisionalPie(data.data.Divisions.Medical, "Medical", "med-pie");
+                  divisionalPie(data.data.Divisions["John Crane"], "John Crane", "jc-pie");
+                  divisionalPie(data.data.Divisions["Flex-Tek"], "Flex-Tek", "flex-pie");
+                  divisionalPie(data.data.Divisions["Interconnect"], "Interconnect", "int-pie");
+                  divisionalPie(data.data.Divisions.Detection, "Detection", "det-pie");
+                  divisionalPie(data.data.Divisions.HRSC, "HRSC", "hrsc-pie");
+                  divisionalPie(data.data.Divisions.Unknown, "Unknown", "unknown-pie");
+
+                });
+              });
+            });
+
+            function pieClicker(pieWrapper, data, division){
+              return function(){
+                var selection = data.getValue(pieWrapper.getChart().getSelection()[0].row, 0);
+                showData(division.replace(/ /g, "-").toLowerCase(), selection.replace(/ /g, "-").toLowerCase());
+                pieWrapper.getChart().setSelection([]);
+              };
+            }
+
+            function divisionalPie(data, title, container){
+              var d = google.visualization.arrayToDataTable(data);
+              var pie = new google.visualization.ChartWrapper({
+                chartType: "PieChart",
+                dataTable: d,
+                options: {
+                  title: title,
+                  sliceVisibilityThreshold: 0,
+                },
+                containerId: container
+              });
+              pie.draw();
+              selection = google.visualization.events.addListener(pie, "select", pieClicker(pie, d, title));
+            }
+          </script>
+        </div>
+      </div>
+    </div>
+<!--#include file="includes/footer.html" -->
+  </body>
+</html>
+
+
